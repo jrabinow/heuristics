@@ -61,7 +61,13 @@ def player2(points):
     return move
 
 
+
 points = greeting(board)
-move = player1(points)
-points = np.append(points, move, axis=0)
-move = player2(points)
+
+give_up = False
+while give_up == False:
+    move = player1(points)
+    points = np.append(points, move, axis=0)
+    move = player2(points)
+    points = np.append(points, move, axis=0)
+    give_up = raw_input("give up? (enter 0 for no or 1 for yes)")
