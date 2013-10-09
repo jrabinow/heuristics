@@ -145,6 +145,19 @@ while give_up == False:
 ## TO DO: ##
 
 
+# Now points will have to have a color "p1" or "p2" as well as coordinates so we can keep track of who placed
+# what stone.  Also we will need to update the board each time a new stone is played so that a master list is 
+# maintained.  None of this is reflected in the main loop at present, but is easily added.
+
+# So, things to do:
+
+# make points = [x-coor, y-coor, color]
+# make board = list of all points and their colors
+# add the area and gravitional pull calculation functions to the main loop
+
+# Then we will be ready to start writing strategies
+
+
 # Write strategies for calculating moves
 # --In this part we will create strategies that can be used to efficiently place stones
 # --The goal is to get as much area as possible
