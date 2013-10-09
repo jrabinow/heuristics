@@ -37,7 +37,7 @@ def greeting(board):
     plt.show()
     return points
 
-def player1(points):
+def player1(points,p1_stones_placed):
     x = int(raw_input("Please enter the x-coordinate for your move"))
     y = int(raw_input("Please enter the y-coordinate for your move"))
     vor = Voronoi(points,incremental=True) #needed or you can't add points
@@ -46,9 +46,10 @@ def player1(points):
     print "You're new move looks like this:"
     voronoi_plot_2d(vor)
     plt.show()
-    return move
+    p1_stones_placed += 1
+    return move, p1_stones_placed
 
-def player2(points):
+def player2(points,p2_stones_placed):
     x = int(raw_input("Please enter the x-coordinate for your move"))
     y = int(raw_input("Please enter the y-coordinate for your move"))
     print points
@@ -58,26 +59,70 @@ def player2(points):
     print "You're new move looks like this:"
     voronoi_plot_2d(vor)
     plt.show()
-    return move
+    p2_stones_placed += 1
+    return move, p2_stones_placed
 
+#######################################################
+#
+#Functions used to compute pull for color 'i'
+#
+#########################################################
 
+## ((x2 - x1)^2 + (y2 - y1)^2)^1/2 = distance between two points
+def euc_dist(x1,y1,x2,y2):
+    return math.sqrt( ( (x2 - x1) ** 2 ) + ( (y2 - y1) ** 2 ) )
 
+#used to compute the distances to a point x
+def distance_to_x( list_of_points, point_x):
+    list_of_distances_to_x = []
+    for i in list_of_points:
+        list_of_distances_to_x.append( euc_dist(i[0],i[1], x[0], x[1] ) )
+        #assumes passed a list of lists points of the form [x,y]
+    return list_of_distances_to_x
+
+#used to compute the pull on a point x
+def pull(list_of_distances_to_x):
+    summation = 0
+    for i in list_of_distances_to_x:
+        summation += ( 1.0 / (i*i) )
+    # 1.0 is used to avoid integer division
+    return summation
+
+#based on the number returned by pull, we calculate the color of the point x,
+#we do this by taking the color with the greatest pull.
+
+#this is an interface function for calling all of the above functions
+def greatest_pull(x,placed_stones,list_of_colors):
+    
+    max_pull = 0
+    color_with_greatest_pull = list_of_colors[0]
+    for i in list_of_colors:
+        list_of distances_x = []
+        list_of_distances = distance_to_x(placed_stones, x)
+        summation = pull(list_of_distances)
+        if max_pull < summation:
+            max_pull = summation
+            color_with_greatest_pull = i
+    return color_with_greatest_pull
+            
+
+##Initialization of board and other variables
 points = greeting(board)
+p1_stones_placed = 0
+p2_stones_placed = 0
 
+#play game loop
 give_up = False
 while give_up == False:
-    move = player1(points)
+    move , p1_stones_placed = player1(points, p1_stones_placed)
     points = np.append(points, move, axis=0)
-    move = player2(points)
+    move , p2_stones_placed  = player2(points, p2_stones_placed)
     points = np.append(points, move, axis=0)
     give_up = raw_input("give up? (enter 0 for no or 1 for yes)")
 
 ## TO DO: ##
 # Calculate total area of regions controlled by each player
 # --To do this we will keep a running total of area and which moves belong to each player
-
-# Calculate gravitational pull of each stone
-# --To do this I will write a function gravitational pull as outlined in the problem specification
 
 # Write strategies for calculating moves
 # --In this part we will create strategies that can be used to efficiently place stones
