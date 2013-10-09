@@ -71,3 +71,17 @@ while give_up == False:
     move = player2(points)
     points = np.append(points, move, axis=0)
     give_up = raw_input("give up? (enter 0 for no or 1 for yes)")
+
+## TO DO: ##
+# Calculate total area of regions controlled by each player
+# --To do this we will keep a running total of area and which moves belong to each player
+
+# Calculate gravitational pull of each stone
+# --To do this I will write a function gravitational pull as outlined in the problem specification
+
+# Write strategies for calculating moves
+# --In this part we will create strategies that can be used to efficiently place stones
+# --The goal is to get as much area as possible
+# --Once this is done we will move onto playing with many players
+
+# Once all of the above is done we move to java for the 1000 x 1000 board
