@@ -106,6 +106,28 @@ def greatest_pull(x,placed_stones,list_of_colors):
     return color_with_greatest_pull
             
 
+################################################
+#
+# Functions for calculating the total area
+#
+#################################################
+
+#the board will store all the current colors of a given point
+def calculate_score(board):
+    p1_sum = 0
+    p2_sum = 0
+    unalloc_sum = 0
+    for i in xrange(20):
+        for j in xrange(20):
+            if board[j][i][2] == 'p1':
+                p1_sum += 1
+            if board[j][i][2] == 'p2':
+                p2_sum += 1
+            else:
+                unallow_sum += 1
+    return p1_sum, p2_sum, unalloc_sum
+
+
 ##Initialization of board and other variables
 points = greeting(board)
 p1_stones_placed = 0
@@ -121,8 +143,7 @@ while give_up == False:
     give_up = raw_input("give up? (enter 0 for no or 1 for yes)")
 
 ## TO DO: ##
-# Calculate total area of regions controlled by each player
-# --To do this we will keep a running total of area and which moves belong to each player
+
 
 # Write strategies for calculating moves
 # --In this part we will create strategies that can be used to efficiently place stones
