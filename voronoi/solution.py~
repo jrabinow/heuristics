@@ -1,0 +1,20 @@
+#Our solution assumes the newest version of numpy and scipy
+#You will need gcc, gfortran, liblapack-dev-base, matlibplot, and cython
+#This code was inspired by http://docs.scipy.org/doc/scipy-dev/reference/generated/scipy.spatial.Voronoi.html
+#by Eric Schles
+
+#setting up the board
+board = []
+
+#We send index of 1000 x 1000 because of the problem specification
+#xrange is used to give an iterator which uses far less memory
+for i in xrange(100):
+    for j in xrange(100):
+        board.append([j,i])
+
+#instantiation is slow with a Voronoi object...approximately 5 seconds, this is troubling
+#we may want to consider using Cython
+
+
+#plotting is slow
+
