@@ -100,10 +100,15 @@ def drawBoard():
     gBoard = np.asarray([i for i, val in enumerate(boardRBG) if val == 0])
     rBoard = np.asarray([i for i, val in enumerate(boardRBG) if val == 1])
     bBoard = np.asarray([i for i, val in enumerate(boardRBG) if val == 2])
+    
+    RBoard = np.asarray([i for i, val in enumerate(boardRBG) if val == -1])
+    BBoard = np.asarray([i for i, val in enumerate(boardRBG) if val == -2])
       
     plt.plot(np.floor(gBoard / board_size), np.floor(gBoard % board_size), 'go', \
-    np.floor(rBoard / board_size), np.floor(rBoard % board_size), 'ro', \
-    np.floor(bBoard / board_size), np.floor(bBoard % board_size), 'bo')
+    np.floor(rBoard / board_size), np.floor(rBoard % board_size), 'rs', \
+    np.floor(bBoard / board_size), np.floor(bBoard % board_size), 'bs',\
+    np.floor(RBoard / board_size), np.floor(RBoard % board_size), 'g^',\
+    np.floor(BBoard / board_size), np.floor(BBoard % board_size), 'g^')
     plt.show()
 
 def main(argv):
@@ -148,6 +153,10 @@ def main(argv):
             else:
                 boardRBG[i]=0
         #drawBoard()
+    for i in stonesByR:
+        boardRBG[i] = -1
+    for j in stonesByB:
+        boardRBG[j] = -2
     drawBoard()
 
 if __name__ == "__main__":
