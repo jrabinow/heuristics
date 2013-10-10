@@ -12,8 +12,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-turns = 5
-board_size = 10
+turns = 4
+board_size = 100
 
 # using a 1D array to use the point enumeration instead of position. 
 # for a[x] => a[i][j] , i = floor(i/a) and j = floor(j%x) 
@@ -32,26 +32,41 @@ def dist(x1, y1, x2, y2):
 # used to compute the pull by a point x on the board
 def pullOnMatrixByX(x):
     pullByX = [0 for i in xrange(0,board_size ** 2)]
-    distanceToXList = [(dist(math.floor(boardRBG[i] / board_size),\
-                              boardRBG[i] % board_size, \
+    
+    distanceToXList = [(dist(math.floor(i / board_size),\
+                              i % board_size, \
                               math.floor(x / board_size),\
                                x % board_size)) \
                        for i, val in enumerate(boardRBG)]
+    
     for i,val in enumerate(distanceToXList):
-        pullByX [i]= (1.0 / (val * val))  # 1.0 is used to avoid integer division
+        if val == 0:
+            pullByX[i]= 10000;
+            continue
+        pullByX[i]= (10000 / (val * val))  # 1.0 is used to avoid integer division
+       
     return pullByX
 
 # total pull recalculated Note: can do this more efficiently by adding the pull by just the new stone in each turn
 def finalPullList():
     
     pull = [0 for i in xrange(0,board_size ** 2)]
+    #pull1 = [0 for i in xrange(0,board_size ** 2)]
+    #pull2 = [0 for i in xrange(0,board_size ** 2)]
     
     for r in stonesByR:
         ptemp = pullOnMatrixByX(r)
         pull =[pull[i]+ ptemp[i] for i in xrange(0,board_size**2)]
+        #pull1 =[ptemp[i] for i in xrange(0,board_size**2)]
     for b in stonesByB:
         ptemp = pullOnMatrixByX(b)
-        pull =[pull[i]+ ptemp[i] for i in xrange(0,board_size**2)]
+        pull =[pull[i]- ptemp[i] for i in xrange(0,board_size**2)]
+        #pull2 =[-1*ptemp[i] for i in xrange(0,board_size**2)]
+    
+    #pull =[pull1[i] +pull2[i] for i in xrange(0,board_size**2) ]
+    
+    print "pull"
+    print pull
     
     return pull
 
@@ -60,22 +75,22 @@ def finalPullList():
 
 
 def player1():
-    #x = int(raw_input("Please enter the x-coordinate for your move"))
-    #y = int(raw_input("Please enter the y-coordinate for your move"))
+    x = int(raw_input("Please enter the x-coordinate for your move"))
+    y = int(raw_input("Please enter the y-coordinate for your move"))
 
     #your strategy1 Goes here
-    x = random.randint(0,999)
-    y = random.randint(0,999)
+    #x = random.randint(0,board_size)
+    #y = random.randint(0,board_size)
     print str(x)+" "+str(y)
     return (x,y)
 
 def player2():
-    #x = int(raw_input("Please enter the x-coordinate for your move"))
-    #y = int(raw_input("Please enter the y-coordinate for your move"))
+    x = int(raw_input("Please enter the x-coordinate for your move"))
+    y = int(raw_input("Please enter the y-coordinate for your move"))
    
     #your strategy2 goes here
-    x = random.randint(0,999)
-    y = random.randint(0,999)
+    #x = random.randint(0,board_size)
+    #y = random.randint(0,board_size)
     print str(x)+" "+str(y)
     return (x,y)
 
@@ -92,8 +107,8 @@ def drawBoard():
     plt.show()
 
 def main(argv):
-    turns = int(raw_input("Number of turns per player"))
-    #drawBoard()
+    #turns = int(raw_input("Number of turns per player"))
+    drawBoard()
     
     global boardPull
     global boardRBG
@@ -132,9 +147,7 @@ def main(argv):
                 boardRBG[i]=2
             else:
                 boardRBG[i]=0
-                
         drawBoard()
-    
 
 if __name__ == "__main__":
     main(sys.argv)
