@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding:utf-8 -*
+
 #Our solution assumes the newest version of numpy and scipy
 #You will need gcc, gfortran, liblapack-dev-base, matlibplot, and cython
 #This code was inspired by http://docs.scipy.org/doc/scipy-dev/reference/generated/scipy.spatial.Voronoi.html
@@ -43,7 +46,7 @@ def player1(points,p1_stones_placed):
     vor = Voronoi(points,incremental=True) #needed or you can't add points
     move = np.array([[x,y]])
     vor.add_points(move)
-    print "You're new move looks like this:"
+    print "Your new move looks like this:"
     voronoi_plot_2d(vor)
     plt.show()
     p1_stones_placed += 1
@@ -93,7 +96,7 @@ def pull(list_of_distances_to_x):
 
 #this is an interface function for calling all of the above functions
 def greatest_pull(x,placed_stones,list_of_colors):
-    
+
     max_pull = 0
     color_with_greatest_pull = list_of_colors[0]
     for i in list_of_colors:
@@ -104,7 +107,7 @@ def greatest_pull(x,placed_stones,list_of_colors):
             max_pull = summation
             color_with_greatest_pull = i
     return color_with_greatest_pull
-            
+
 
 ################################################
 #
