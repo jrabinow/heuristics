@@ -21,20 +21,26 @@ typedef struct {
 	unsigned size, mem_size;
 } Array;
 
+typedef struct {
+	Point *coord;
+	unsigned int num_points[NUM_PLAYERS];
+} Board;
+
 /* ----- STRATEGIES ----- */
-Point *interactive_player(Point **board, Array *player1, Array *player2, unsigned short id);
-Point *random_player(Point **board, Array *player1, Array *player2, unsigned short id);
+Point *random_player(Board *board, Point **player1, Point **player2, unsigned short id);
+Point *interactive_player(Board *board, Point **player1, Point **player2, unsigned short id);
 
 /* ----- GENERAL ----- */
-void play_game(Point **board, Array *player1, Array *player2, int num_plays);
-void pull_on_matrix(Point **board, Point *p);
-void array_add(Array *player, Point *p);
+void play_game(Board *board, Point **player1, Point **player2, int num_plays);
+void pull_on_matrix(Board *board, Point *p);
 
 #define distance(val1, val2)	sqrt((val1) * (val1) + (val2) * (val2))
 #define turn_number(array)	(array)->size
 
-int board_size = BOARD_SIZE;
+#define coord(x, y)		coord[(x) * BOARD_SIZE + (y)]
 
-Point *(*strategy1)(Point**, Array*, Array*, unsigned short) = &random_player;
-Point *(*strategy2)(Point**, Array*, Array*, unsigned short) = &random_player;
+#define set_owner(point, id)	((point).player = (point).value[(id) - 1] > (point).value[(point).player - 1] ? (id) : (point).player)
+
+Point *(*strategy1)(Board*, Point **, Point**, unsigned short) = &random_player;
+Point *(*strategy2)(Board*, Point **, Point**, unsigned short) = &random_player;
 

@@ -1,4 +1,4 @@
-#CFLAGS=-g -Wall
+#CFLAGS=-g -Wall --short-enums
 #LDFLAGS=-lm
 CFLAGS=-Ofast -Wall --short-enums
 LDFLAGS=-s -lm
