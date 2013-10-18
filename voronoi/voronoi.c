@@ -87,19 +87,20 @@ int main(int argc, char **argv)
 	player1 = (Point**) xmalloc(num_plays * sizeof(Point*));
 	player2 = (Point**) xmalloc(num_plays * sizeof(Point*));
 
-	play_game(&board, player1, player2, num_plays);
+//	play_game(&board, player1, player2, num_plays);
 
 	/* BENCHMARKING
 	 * $ time ./voronoi
 	 */
 
-/*	Point p;
+	Point p;
 	p.x = 50;
 	p.y = 50;
 	p.player = 42;
-	for(i = 0; i < 100; i++)
-		pull_on_matrix(board, &p);
-*/
+	int i;
+	for(i = 0; i < 1000; i++)
+		pull_on_matrix(&board, &p);
+
 
 	free(board.coord);
 	free(player1);

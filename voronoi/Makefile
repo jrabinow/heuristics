@@ -6,7 +6,7 @@ LDFLAGS=-s -lm
 voronoi:	utilsV3.o
 
 clean:
-	rm -f *.o voronoi
+	rm -f *.o
 
 distclean: clean
 	rm -f voronoi
