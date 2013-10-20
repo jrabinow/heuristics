@@ -77,32 +77,6 @@ FILE *xfdopen(int fd, const char *mode)
 		return f;
 }
 
-void xpipe(int *pipefd)
-{
-	if(pipe(pipefd) != 0) {
-		perror("Error creating pipe ");
-		exit(EXIT_FAILURE);
-	}
-}
-
-pid_t xfork(void)
-{
-	pid_t pid = fork();
-	if(pid == -1) {
-		perror("Error forking ");
-		exit(EXIT_FAILURE);
-	} else
-		return pid;
-}
-
-void xdup2(int oldfd, int newfd)
-{
-	if(dup2(oldfd, newfd) == -1) {
-		perror("Error redirecting output ");
-		exit(EXIT_FAILURE);
-	}
-}
-
 void str_tolower(char *str)
 {
 	for(; *str != '\0'; str++)
@@ -176,6 +150,17 @@ char *append(char *str1, const char *str2)
 	return str1;
 }
 
+void *initialize_vector(void *dest, const void *src, size_t size, size_t nmemb)
+{
+	int i;
+	
+	memcpy(dest, src, size);
+	for(i = 1; i << 1 <= nmemb; i <<= 1)
+		memcpy(dest + i * size, dest, i * size);
+	memcpy(dest + i * size, dest, (nmemb - i) * size);
+	return dest;
+}
+
 // xmalloc, xrealloc
 char *readLine(FILE *stream)
 {
@@ -183,15 +168,22 @@ char *readLine(FILE *stream)
 	unsigned currentSize = 32;
 	register char c;
 	char *str = (char*) xmalloc(32);
-	flockfile(stream);
 
-	while((c = fgetc_unlocked(stream)) != EOF && c != '\n') {
+#ifdef _POSIX_THREAD_SAFE_FUNCTIONS		// locking and getc_unlocked functions
+	flockfile(stream);
+	while((c = getc_unlocked(stream)) != EOF && c != '\n') {
 		if(i == currentSize)
 			str = (char*) xrealloc(str, currentSize <<= 1);
 		str[i++] = c;
 	}
-
 	funlockfile(stream);
+#else
+	while((c = getc(stream)) != EOF && c != '\n') {
+		if(i == currentSize)
+			str = (char*) xrealloc(str, currentSize <<= 1);
+		str[i++] = c;
+	}
+#endif
 	if(i == currentSize)
 		str = (char*) xrealloc(str, currentSize += 1);
 	else if(c == EOF && i == 0) {
@@ -211,7 +203,7 @@ char *read_file_descriptor(int fd)
 	char *str = (char*) xmalloc(32);
 
 	/* read (currentSize - i) chars at a time, double currentSize and increment
-	 * i by the number of characters read and repeat until no more characters 
+	 * i by the number of characters read and repeat until no more characters
 	 * are available */
 	do {
 		i += read(fd, str + i, currentSize - i);	
@@ -271,7 +263,7 @@ size_t split_str(const char *str, const char separator, char ***returnArray)
 				str++;
 			else {
 				(*returnArray)[count] = (char*) xmalloc(i+1);
-				strncpy((*returnArray)[count], str, i);
+				memcpy((*returnArray)[count], str, i);
 				(*returnArray)[count++][i] = '\0';
 				str += i+1;
 			}	// COMMENT THIS LINE TO NOT SKIP OVER CONSECUTIVE SEPARATORS
@@ -298,21 +290,23 @@ int is_dir(char *path)
 }
 
 #ifdef	_WIN32
-#define FILE_SEPARATOR	'\\'
+	#define FILE_SEPARATOR	'\\'
 #else
-#define FILE_SEPARATOR	'/'
+	#define FILE_SEPARATOR	'/'
 #endif
 // xmalloc
-char *make_path(const char *oldPath, const char *dirName)
+char *make_path(const char *old_path, const char *dir_name)
 {
-	char *newPath = (char*) NULL;
-	int len = strlen(oldPath);
+	char *new_path = (char*) NULL;
+	int len1, len2;
 
-	newPath = (char*) xmalloc(len + strlen(dirName) + 2);
-	strcpy(newPath, oldPath);
-	strcpy(newPath + len + 1, dirName);
-	newPath[len] = FILE_SEPARATOR;
-	return newPath;
+	len1 = strlen(old_path);
+	len2 = strlen(dir_name);
+	new_path = (char*) xmalloc(len1 + len2 + 2);
+	memcpy(new_path, old_path, len1);
+	new_path[len1] = FILE_SEPARATOR;
+	memcpy(new_path + len1 + 1, dir_name, len2 + 1);
+	return new_path;
 }
 #undef FILE_SEPARATOR
 
