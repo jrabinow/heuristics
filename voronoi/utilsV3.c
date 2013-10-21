@@ -277,6 +277,49 @@ size_t split_str(const char *str, const char separator, char ***returnArray)
 	return count;
 }
 
+size_t split_str_lite(const char *str, const char separator, char ***returnArray)
+{
+	register int i;
+	size_t count = 1;
+
+	// COMMENT NEXT 6 LINES TO NOT SKIP CONSECUTIVE separator
+	// CHARS AT START OF str
+	while(*str == separator)
+		str++;
+	if(*str == '\0') {
+		*returnArray = (char**) NULL;
+		return 0;
+	}
+
+	for(i = 0; str[i] != '\0'; i++)
+		//count += (str[i] == separator);
+		count += (str[i] == separator && str[i+1] != separator && str[i+1] != '\0');
+	// REPLACE PREVIOUS LINE WITH ABOVE COMMENTED LINE
+	// TO NOT SKIP OVER CONSECUTIVE SEPARATORS
+
+	*returnArray = (char**) xmalloc(count * sizeof(char*));
+
+	for(count = i = 0; str[i] != '\0'; i++) {
+		if(str[i] == separator) {
+			// COMMENT NEXT 3 LINES TO NOT SKIP OVER CONSECUTIVE SEPARATORS
+			if(i == 0)
+				str++;
+			else {
+				(*returnArray)[count] = (char*) xmalloc(i+1);
+				memcpy((*returnArray)[count], str, i);
+				(*returnArray)[count++][i] = '\0';
+				str += i+1;
+			}	// COMMENT THIS LINE TO NOT SKIP OVER CONSECUTIVE SEPARATORS
+			i = -1;
+		}
+	}
+	if(i != 0) {
+		(*returnArray)[count] = (char*) xmalloc(i+1);
+		strcpy((*returnArray)[count++], str);
+	}
+	return count;
+}
+
 #include <sys/stat.h>
 int is_dir(char *path)
 {

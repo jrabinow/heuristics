@@ -28,7 +28,7 @@ int connectTo(char *server_name, int port)
 	freeaddrinfo(adresses);
 	return sockfd;
 }
-
+/*
 int IPC_client(char *port)
 {
 	int sockfd = createSocket(AF_UNIX);
@@ -39,4 +39,4 @@ int IPC_client(char *port)
 
 	
 	return sockfd;
-}
+}*/

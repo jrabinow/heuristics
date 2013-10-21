@@ -2,14 +2,13 @@
 #include "networking.h"
 #include <math.h>
 #include <float.h>
-#include <pthread.h>
 
 #define BOARD_SIZE	1000
 #define NUM_PLAYS	10
 #define NUM_PLAYERS	2
-//#define COMPETITION
+#define COMPETITION
 
-#define TEAM_NAME	"SupaDupaShaq"
+#define TEAM_NAME	"SuperShaq"
 
 typedef struct {
 	unsigned short x, y, owner;
@@ -32,27 +31,38 @@ typedef struct {
 } Pthread_Arg;
 
 /* ----- STRATEGIES ----- */
-Point *random_player(Board *board, Moves *player_moves, unsigned short id);
-Point *interactive_player(Board *board, Moves *player_moves, unsigned short id);
-Point *talk_to_server_opponent(Board *board, Moves *player_moves, unsigned short id);
+void random_player(Board *board, Moves *player_moves, unsigned short id);
+void interactive_player(Board *board, Moves *player_moves, unsigned short id);
+void talk_to_server_opponent(Board *board, Moves *player_moves, unsigned short id);
 
 /* ----- GENERAL ----- */
 void play_game(Board *board, Moves *player_moves, int num_plays, unsigned short id);
 void update_board(Board *board, Point *p);
+
+void init_server_connection(int argc, char **argv, int *num_plays, int *player_id);
 
 #define distance(val1, val2)	sqrt((val1) * (val1) + (val2) * (val2))
 #define turn_number(array)	(array)->size
 
 #define coord(x, y)		coord[(x) * BOARD_SIZE + (y)]
 
-#define set_move(board, x, y, id)	{\
+#define set_move(board, moves, x, y, id)	{\
 	board->coord(x, y).x = x;\
 	board->coord(x, y).y = y;\
 	board->coord(x, y).owner = id;\
 	board->coord(x, y).value[id - 1] = DBL_MAX;\
+	moves->points[id - 1][moves->move_number] = &board->coord(x, y);\
 	board->num_points[id - 1]++;\
+	update_board(board, &board->coord(x, y));\
 }
 
-Point *(*strategy1)(Board*, Moves*, unsigned short) = &random_player;
-Point *(*strategy2)(Board*, Moves*, unsigned short) = &random_player;
+#define print_server(out, ...)	{\
+	fprintf(out, __VA_ARGS__);\
+	fputs("<EOM>", out);\
+	fflush(out);\
+}
+
+
+void (*strategy1)(Board*, Moves*, unsigned short) = &random_player;
+void (*strategy2)(Board*, Moves*, unsigned short) = &random_player;
 
