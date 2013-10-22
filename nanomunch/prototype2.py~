@@ -1,0 +1,62 @@
+"""
+This code implements the nanomunching game.
+Prototype by
+Eric Schles
+
+we use polar coordinates so we have an obvious notion of up, down, right, left as denoted by r.
+
+"""
+import math
+import numpy as np
+
+
+def check_direction(loc1, loc2):
+    if loc1[0]
+
+def convert_to_polar(loc):
+    r = math.sqrt( (loc[0] ** 2) + (loc[1] ** 2) )
+    theta = np.arctan2(yloc, xloc) * 180/ np.pi
+    return id, r, theta
+
+"""
+Code to determine up, down, right, left
+
+if 0 <= theta <= 45 go right or if 292.5 < theta <= 360 go right
+if 45 < theta <= 112.5 go up
+if 112.5 < theta <= 202.5 go left
+if 202.5 < theta <= 292.5 go down
+
+"""
+
+#bringing the data into memory
+raw_data = open("data.txt", "r")
+
+location = {}
+links = {}
+first_mark = False
+second_mark = False
+
+for i in raw_data:
+    
+    if "nodeid,xloc,yloc" in i:
+        first_mark = True
+        
+    if "nodeid1,nodeid2" in i:
+        second_mark = True
+        first_mark = False     
+    
+    if first_mark and i != '\n':
+        i = i.split(",")
+        if i[0] != 'nodeid':
+            location.update({i[0]:( int(i[1]),int(i[2].strip()) )})
+        
+    if second_mark and i != '\n':
+        i = i.split(",")
+        if i[0] != 'nodeid1':
+            links.update({int(i[0]):int( i[1].strip() ) })
+
+
+
+
+#print location, links
+
