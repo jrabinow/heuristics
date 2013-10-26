@@ -1,0 +1,220 @@
+"""
+Initial condition:
+P is initially at point (330, 200) and H at position (0,0).
+
+possible
+
+"""
+
+import numpy as np
+from parakeet import jit
+from sys import argv
+import math
+
+#wall_boundary = argv[1]
+
+#hunter moves diagonally
+#we can keep a list of walls within the hunter class
+
+#we should have funcitons the minimize the the amount of area the prey can occupy
+#The function should calculate the area that minimizes and 
+#then return to place a wall vertically or horizontally
+
+#we should have some functions that are used and depend on n
+#If number of walls is 2 or below we use strictly binary search as long as we are more than 100 spaces away
+
+#If the number of walls is between 5 and 10 we should use a more intelligent search.
+#we can do 1 to binary search wall placements but then after that we should use "intelligent placement"
+
+#intelligent placement:
+
+#goal: minimize area available to prey,
+#varibles: area available to prey, cost to hunter of placing wall = N, 
+#relative distance between hunter and prey
+
+#get ride of sqrt if lacking in speed
+def euc_dist(hunter_loc, prey_loc):
+    return math.sqrt( ( (hunter_loc[0] - prey_loc[0]) ** 2) + ( (hunter_loc[1] - prey_loc[1]) ** 2) )
+
+
+#wall_loc is an a list of lists
+#format: [ [x-coordinate for wall i, y-coordinate for wall i, vertical or horizontal for wall i], ]
+#prey_loc is a list
+#format: [x-coordinate of prey, y-coordinate of prey]
+def calculate_prey_area(prey_loc, wall_loc):
+    
+    top_wall = 500
+    bottom_wall = 0
+    left_wall = 0
+    right_wall = 500
+#This handles the case of four imposed walls
+    min_above = None
+    min_below = None
+    min_right = None
+    min_left = None
+
+    min_above_dist = 10000
+    min_below_dist = 10000
+    min_right_dist = 10000
+    min_left_dist = 10000
+    
+    #impose an ordering on walls and only consider those closest to the prey
+    #we are pruning any useless walls
+    for i in wall_loc:
+        if i[2] == 'vertical':
+            if prey_loc[0] < i[0]:
+                if i[0] - prey_loc[0] < min_right_dist:
+                    min_right_dist = i[0] - prey_loc[0]
+                    min_right = i
+            if prey_loc[0] > i[0]:
+                if prey_loc[0] - i[0] < min_left_dist:
+                    min_left_dist = prey_loc[0] - i[0]
+                    min_left = i
+        if i[2] == 'horizontal':
+            if prey_loc[1] < i[1]:
+                if i[1] - prey_loc[1] < min_above_dist:
+                    min_above_dist = i[1] - prey_loc[1]
+                    min_above = i
+            if prey_loc[1] > i[1]:
+                if prey_loc[1] - i[1] < min_below_dist:
+                    min_below_dist = prey_loc[1] - i[1]
+                    min_below = i
+    
+    #calculate the available area for the prey
+    min_wall_loc = [min_right,min_left,min_above, min_below]
+    if min_wall_loc[2] != None:
+        top_wall = min_wall_loc[2][1]
+    else:
+        min_wall_loc[2] = [0,top_wall,"horizontal"]
+    if min_wall_loc[3] != None:
+        bottom_wall = min_wall_loc[3][1]
+    else:
+        min_wall_loc[3] = [0,bottom_wall,"horizontal"]
+    if min_wall_loc[1] != None:
+        left_wall = min_wall_loc[1][0]
+    else:
+        min_wall_loc[1] = [left_wall,0, "vertical"]
+    if min_wall_loc[0] != None:
+        right_wall = min_wall_loc[0][0]
+    else:
+        min_wall_loc[0] = [right_wall,0,"vertical"]
+
+    area = 0
+    for i in min_wall_loc:
+        if i[2] == 'vertical':
+            if prey_loc[0] < i[0]:
+                area1 = calc_area(i, "left", top_wall, bottom_wall, right_wall, left_wall)
+            if prey_loc[0] > i[0]:
+                area2 = calc_area(i, "right", top_wall, bottom_wall, right_wall, left_wall)
+        if i[2] == 'horizontal':
+            if prey_loc[1] < i[1]:
+                area3 = calc_area(i, "below", top_wall, bottom_wall, right_wall, left_wall)
+            if prey_loc[1] > i[1]:
+                area4 = calc_area(i, "above", top_wall, bottom_wall, right_wall, left_wall)
+    if area1 == area2 == area3 == area4:
+        area = area1
+    return area
+
+
+#Here we handle each corner case for where the prey could be, explicitly
+#the general formula is (right_wall - left_wall) * (top_wall - bottom_wall)
+#It is possible that the only case we need is (right_wall - left_Wall) * (top_wall - bottom_wall)
+def calc_area(wall_loc,where, top_wall, bottom_wall, right_wall, left_wall):
+    if where == "left":
+        if bottom_wall == 0 and left_wall == 0:
+            return wall_loc[0] * top_wall
+        if bottom_wall != 0 and left_wall == 0:
+            return wall_loc[0] * (top_wall - bottom_wall)
+        if bottom_wall == 0 and left_wall != 0:
+            return (wall_loc[0] - left_wall) * top_wall
+        if bottom_wall != 0 and left_wall != 0:
+            return (wall_loc[0] -left_wall) * (top_wall - bottom_wall)
+
+    if where == "right":
+        if bottom_wall == 0:
+            return (right_wall - wall_loc[0]) * top_wall
+        if bottom_wall != 0:
+            return (right_wall - wall_loc[0]) * (top_wall - bottom_wall)
+        
+    if where == "below":
+        if bottom_wall == 0:
+            return (right_wall - left_wall) * wall_loc[1]
+        if bottom_wall != 0:
+            return (right_wall - left_wall) * (wall_loc[1] - bottom_wall)
+    
+    if where == "above":
+        if left_wall == 0:
+            return right_wall * (top_wall - wall_loc[1])
+        if left_wall != 0:
+            return (right_wall - left_wall) * (top_wall - wall_loc[1])
+
+#Notes:
+#calculate_prey_area has been tested and proven to work
+#obvious speed ups: use numpy areas and jit, however we aren't dealing with large areas or a lot of elements
+#per area, also all the calculations are minimal, therefore it may not be necessary to speed up
+
+
+hunter_loc = [0,0]
+prey_loc = [330,200]
+
+game_not_over = True
+
+
+#grab hunter 
+answer = str(raw_input('player1: Are you the hunter? (y or n)\n'))
+
+if answer == 'y':
+    is_hunter = True
+else:
+    is_hunter = False
+
+
+#play as hunter
+if is_hunter == True:
+    while game_not_over:
+        total_area = 
+
+
+
+
+#ends the game
+        if euc_dist(hunter_loc, prey_loc) <= 4:
+            game_not_over = False
+
+#play as prey
+else:
+    while game_not_over:
+
+
+
+
+
+#ends the game
+        if euc_dist(hunter_loc, prey_loc) <= 4:
+            game_not_over = False
+
+# walls is a list of lists of walls
+# format: [x coordinate, y coordinate, veritical or horizontal]
+# player_location is the current location of a given player
+# format: [x coordinate, y coordinate]
+# player_direction is the direction the player is attempting to move
+# format: [x coordinate, y coordinate]
+def bouncing( player_loc , player_direction, walls):
+    
+    x_original = player_loc[0]
+    y_original = player_loc[1]
+    for i in walls:
+        player_loc[0] = player_loc[0] + player_direction[0]
+        player_loc[1] = player_loc[1] + player_direction[1]
+        if i[0] != player_loc[0] and i[1] != player_loc[1]:
+            continue
+        elif i[1] == player_loc[1] and i[2] == "horizontal":
+            player_loc[1] = y_original
+        elif i[0] == player_loc[0] and i[2] == "vertical":
+            player[0] = x_original
+        
+    return player_loc
+
+
+            
+        
