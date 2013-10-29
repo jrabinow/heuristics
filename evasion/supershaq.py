@@ -7,7 +7,7 @@ Created on Oct 27, 2013
 import sys
 import socket
 import math 
-#from lxml.html.builder import PRE
+#from lxml.html.builder import PRE  # dafuq???
 from parakeet import jit
 
 # Here the communication with server part starts! 'def' is used to define a function.
@@ -395,15 +395,16 @@ downCounter =0
 leftCounter =0
 presentMotion =0
 counterTo10 = 0
-def calcPreyMove():
+wallGrid2 = [[0 for i in xrange(0,500)] for j in xrange(0,500)]
 
-    wallGrid2 = [[0 for i in range(0,500)] for j in range(0,500)]
+def calcPreyMove():
 
     global upCounter
     global rightCounter
     global downCounter
     global leftCounter
     global presentMotion
+    global wallGrid2
     for k, v in wallList.iteritems():
 
             if v[0][0]==v[1][0]:

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 """
 Initial condition:
 P is initially at point (330, 200) and H at position (0,0).
@@ -17,8 +18,8 @@ import random
 #hunter moves diagonally
 #we can keep a list of walls within the hunter class
 
-#we should have funcitons the minimize the the amount of area the prey can occupy
-#The function should calculate the area that minimizes and 
+#we should have funcitons the minimize the amount of area the prey can occupy
+#The function should calculate the area that minimizes and
 #then return to place a wall vertically or horizontally
 
 #we should have some functions that are used and depend on n
@@ -30,7 +31,7 @@ import random
 #intelligent placement:
 
 #goal: minimize area available to prey,
-#varibles: area available to prey, cost to hunter of placing wall = N, 
+#variables: area available to prey, cost to hunter of placing wall = N,
 #relative distance between hunter and prey
 
 
@@ -49,7 +50,7 @@ def euc_dist(hunter_loc, prey_loc):
 # player_direction is the direction the player is attempting to move
 # format: [x coordinate, y coordinate]
 def bouncing( player_loc , player_direction, walls,is_hunter):
-    
+
     x_original = player_loc[0]
     y_original = player_loc[1]
     for i in walls:
@@ -74,7 +75,7 @@ def bouncing( player_loc , player_direction, walls,is_hunter):
 #prey_loc is a list
 #format: [x-coordinate of prey, y-coordinate of prey]
 def calculate_prey_area(prey_loc, wall_loc):
-    
+
     top_wall = 500
     bottom_wall = 0
     left_wall = 0
@@ -89,7 +90,7 @@ def calculate_prey_area(prey_loc, wall_loc):
     min_below_dist = 10000
     min_right_dist = 10000
     min_left_dist = 10000
-    
+
     #impose an ordering on walls and only consider those closest to the prey
     #we are pruning any useless walls
     for i in wall_loc:
@@ -111,7 +112,7 @@ def calculate_prey_area(prey_loc, wall_loc):
                 if prey_loc[1] - i[1] < min_below_dist:
                     min_below_dist = prey_loc[1] - i[1]
                     min_below = i
-    
+
     #calculate the available area for the prey
     min_wall_loc = [min_right,min_left,min_above, min_below]
     if min_wall_loc[2] != None:
@@ -167,13 +168,13 @@ def calc_area(wall_loc,where, top_wall, bottom_wall, right_wall, left_wall):
             return (right_wall - wall_loc[0]) * top_wall
         if bottom_wall != 0:
             return (right_wall - wall_loc[0]) * (top_wall - bottom_wall)
-        
+
     if where == "below":
         if bottom_wall == 0:
             return (right_wall - left_wall) * wall_loc[1]
         if bottom_wall != 0:
             return (right_wall - left_wall) * (wall_loc[1] - bottom_wall)
-    
+
     if where == "above":
         if left_wall == 0:
             return right_wall * (top_wall - wall_loc[1])
@@ -186,10 +187,10 @@ def calc_area(wall_loc,where, top_wall, bottom_wall, right_wall, left_wall):
 #NOTE: wall functions are not completely correct, need to take account for the following condition:
 
 # When H creates a wall, the wall must touch the point where H was before H moved. The wall must be vertical or
-# horizontal and must touch neither H nor P nor go through another wall (though it may touch another wall). 
-# That is, a wall that would hit P if built is not built. After creating a wall, H must wait at least N time 
-# steps before attempting to create another wall. It may be of any length. If H tries to create a wall that 
-# violates any of these rules, the system will generate a message on the screen, will not build the wall, but 
+# horizontal and must touch neither H nor P nor go through another wall (though it may touch another wall).
+# That is, a wall that would hit P if built is not built. After creating a wall, H must wait at least N time
+# steps before attempting to create another wall. It may be of any length. If H tries to create a wall that
+# violates any of these rules, the system will generate a message on the screen, will not build the wall, but
 # will not otherwise penalize H.
 
 
@@ -217,17 +218,17 @@ def relative_location(prey,hunter):
         position[0] = "at"
     if prey[0] > hunter[0]:
         position[0] = "right"
-    
+
     #below means the prey is below the hunter
     #above means the prey is above the hunter
-    #at means the prey is in the same vertical position as the hunter    
+    #at means the prey is in the same vertical position as the hunter
     if prey[1] < hunter[1]:
         position[1] = "below"
     if prey[1] == hunter[1]:
         position[1] = "at"
     if prey[1] > hunter[1]:
         position[1] = "above"
-    
+
     return position
 
 
@@ -295,7 +296,7 @@ def optimize_wall_location(prey,hunter,walls,relative_position):
                     del walls[-1]
             else:
                 walls.append(below_hunter)
-                min_area = calculate_prey_area(prey, walls.append(below_hunter) ) 
+                min_area = calculate_prey_area(prey, walls.append(below_hunter) )
                 del best_wall[0]
                 best_wall.append(below_hunter)
                 del walls[-1]
@@ -311,9 +312,9 @@ game_not_over = True
 
 # for testing uncomment following line:
 random.seed()
-walls_available = random.randint(4,20) 
+walls_available = random.randint(4,20)
 
-#grab hunter 
+#grab hunter
 answer = str(raw_input('player1: Are you the hunter? (y or n)\n'))
 
 if answer == 'y':
@@ -335,11 +336,11 @@ while game_not_over:
     total_area = calculate_prey_area(prey_loc, walls)
     relative_pos = relative_position(prey_loc, hunter_loc)
     if (counter % walls_available) == 0:
-        
-        best_wall = optimize_wall_location(prey_loc, hunter_loc, walls,relative_pos) 
+
+        best_wall = optimize_wall_location(prey_loc, hunter_loc, walls,relative_pos)
         if best_wall != []:
             walls.append(best_wall)
-    
+
     new_x_hunter = hunter_loc[0] + 1
     new_y_hunter = hunter_loc[1] + 1
     hunter_loc = bouncing(hunter_loc, [new_x_hunter, new_y_hunter],walls, is_hunter)
@@ -348,11 +349,9 @@ while game_not_over:
         new_x_prey = random.randint(-1,1)
         random.seed()
         new_y_prey = random.randint(-1,1)
-        prey_loc = bouncing(prey_loc, [new_x_prey, new_y_prey], walls) 
+        prey_loc = bouncing(prey_loc, [new_x_prey, new_y_prey], walls)
 
 #ends the game
     if euc_dist(hunter_loc, prey_loc) <= 4:
         game_not_over = False
 
-            
-        
