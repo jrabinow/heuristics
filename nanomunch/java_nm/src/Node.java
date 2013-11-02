@@ -21,16 +21,30 @@ public class Node {
 	
 	public Node(){
 		this.id = count++;
+		this.eaten = false;
 		this.up= null;
 		this.down= null;
 		this.left= null;
-		this.right= null;	
+		this.right= null;
+	
 	}
 	
 	public Node(int x,int y){
 		this.id = count++;
 		this.x = x;
 		this.y = y;
+		this.eaten = false;
+		this.up= null;
+		this.down= null;
+		this.left= null;
+		this.right= null;
+	}
+
+	public Node(int id,int x,int y){
+		this.id = id;
+		this.x = x;
+		this.y = y;
+		this.eaten = false;
 		this.up= null;
 		this.down= null;
 		this.left= null;

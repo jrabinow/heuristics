@@ -7,12 +7,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
-import java.util.Set;
 
 public class Supershaq_nm {
 
@@ -25,14 +22,11 @@ public class Supershaq_nm {
 			"rdlu", "rdul", "rldu", "rlud", "rudl", "ruld", "udlr", "udrl",
 			"uldr", "ulrd", "urdl", "urld" };
 
-	private Random random;
-
-	private Map<Integer, Integer[]> locations;
-	private Map<Integer, Map<Character, Integer>> edges;
-	private Set<Integer> remainingNodes;
-
+	public List<Node> remainingNodesList = new ArrayList<Node>();
+	public boolean[][] edgeMatrix; 
+	
 	private List<Nanomuncher> myNanomunchers;
-	private List<Integer> otherNanomunchers;
+	private List<Nanomuncher> otherNanomunchers;
 
 	private int myScore;
 	private int opponentScore;
@@ -46,11 +40,6 @@ public class Supershaq_nm {
 		out = new PrintWriter(client.getOutputStream(), true);
 		in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
-		locations = new HashMap<Integer, Integer[]>();
-		edges = new HashMap<Integer, Map<Character, Integer>>();
-		remainingNodes = new HashSet<Integer>();
-		random = new Random(System.currentTimeMillis());
-
 		send("SuperShaq");
 		parseData(receive());
 	}
@@ -59,49 +48,62 @@ public class Supershaq_nm {
 		String[] specs = data.split("\n");
 		boolean startNodes = false;
 		boolean startEdges = false;
+		edgeMatrix = null;
+		
 		for (String line : specs) {
 			String content = line.trim().toLowerCase();
 			if (content.equals(""))
 				continue;
+			
 			if (content.contains("xloc")) {
 				startNodes = true;
+			
 			} else if (content.contains("nodeid1")) {
 				startEdges = true;
+				edgeMatrix = new boolean[remainingNodesList.size()][remainingNodesList.size()];
+				Arrays.fill(edgeMatrix, Boolean.FALSE);
+			
 			} else if (startEdges) {
 				String[] edgeSpecs = line.split(",");
-				int node1 = Integer.parseInt(edgeSpecs[0]);
-				int node2 = Integer.parseInt(edgeSpecs[1]);
-				if (!edges.containsKey(node1)) {
-					edges.put(node1, new HashMap<Character, Integer>());
-				}
-				if (!edges.containsKey(node2)) {
-					edges.put(node2, new HashMap<Character, Integer>());
-				}
-				Integer[] loc1 = locations.get(node1);
-				Integer[] loc2 = locations.get(node2);
-				if (loc1[0].equals(loc2[0])) {
-					if (loc1[1] - loc2[1] == 1) {
-						edges.get(node1).put('u', node2);
-						edges.get(node2).put('d', node1);
+				
+				int nodeId1 = Integer.parseInt(edgeSpecs[0]);
+				int nodeId2 = Integer.parseInt(edgeSpecs[1]);
+				
+				edgeMatrix[nodeId1][nodeId2] = true;
+				edgeMatrix[nodeId2][nodeId1] = true;
+				
+				Node a = remainingNodesList.get(nodeId1);
+				Node b = remainingNodesList.get(nodeId2);
+				
+				if (a.x == b.x) {
+					if (a.y - b.y == 1) {
+						a.up = b;
+						b.down = a;				
 					} else {
-						edges.get(node1).put('d', node2);
-						edges.get(node2).put('u', node1);
+						a.down = b;
+						b.down = a;
 					}
 				} else {
-					if (loc1[0] - loc2[0] == 1) {
-						this.edges.get(node1).put('l', node2);
-						this.edges.get(node2).put('r', node1);
+					if (a.x - b.x == 1) {
+						a.left = b;
+						b.right  = a;
 					} else {
-						this.edges.get(node1).put('r', node2);
-						this.edges.get(node2).put('l', node1);
+						a.right = b;
+						b.left  = a;
 					}
 				}
 			} else if (startNodes) {
 				String[] nodeSpecs = line.split(",");
-				Integer[] locs = { Integer.parseInt(nodeSpecs[1]),
-						Integer.parseInt(nodeSpecs[2]) };
-				locations.put(Integer.parseInt(nodeSpecs[0]), locs);
-				remainingNodes.add(Integer.parseInt(nodeSpecs[0]));
+				int id = Integer.parseInt(nodeSpecs[0]);
+				int x = Integer.parseInt(nodeSpecs[1]);
+				int y = Integer.parseInt(nodeSpecs[2]);
+				
+				Node n = new Node(id,x,y);
+				
+				remainingNodesList.add(n);
+				
+				Board.nodes[x][y] = n;
+				
 			}
 		}
 	}
@@ -115,28 +117,31 @@ public class Supershaq_nm {
 		if (Integer.parseInt(munched[0]) > 0) {
 			String[] nodes = munched[1].split(",");
 			for (int i = 0; i < Integer.parseInt(munched[0]); i++) {
-				remainingNodes.remove(Integer.parseInt(nodes[i]));
+				remainingNodesList.get(Integer.parseInt(nodes[i])).eaten = true;
 			}
 		}
+		
 		myNanomunchers = new ArrayList<Nanomuncher>();
 		String[] myMunchers = stats[1].split(":");
 		if (Integer.parseInt(myMunchers[0]) > 0) {
 			String[] myMuncherDetails = myMunchers[1].split(",");
 			for (int i = 0; i < Integer.parseInt(myMunchers[0]); i++) {
 				String[] muncher = myMuncherDetails[i].split("/");
-				// myNanomunchers.add(new Nanomuncher(muncher[1],
-				// Integer.parseInt(muncher[0]), Integer
-				// .parseInt(muncher[2])));
+				myNanomunchers.add(new Nanomuncher(muncher[1],
+				remainingNodesList.get(Integer.parseInt(muncher[0])),
+				Integer.parseInt(muncher[2])));
 			}
 		}
-		otherNanomunchers = new ArrayList<Integer>();
+		otherNanomunchers = new ArrayList<Nanomuncher>();
 		String[] otherMunchers = stats[2].split(":");
 		if (Integer.parseInt(otherMunchers[0]) > 0) {
 			String[] otherMuncherDetails = otherMunchers[1].split(",");
 			for (int i = 0; i < Integer.parseInt(otherMunchers[0]); i++) {
-				otherNanomunchers.add(Integer.parseInt(otherMuncherDetails[i]));
+				otherNanomunchers.add(new Nanomuncher(
+				remainingNodesList.get(Integer.parseInt(otherMuncherDetails[i]))));
 			}
 		}
+		
 		String[] scores = stats[3].split(",");
 		myScore = Integer.parseInt(scores[0]);
 		opponentScore = Integer.parseInt(scores[1]);
@@ -169,33 +174,35 @@ public class Supershaq_nm {
 	public void startGame() throws IOException, InterruptedException {
 		while (parseStat(receive())) {
 			System.out.println("remaining munchers: " + remainingMunchers);
-			Thread.sleep(500);
-			randomeMove();
+			//Thread.sleep(500);
+			strategy1();
 		}
+	}
+	
+	
+	
+	//write your strategies here as functions. 
+	public void strategy1() {
+	
+		
+		
+	}
+	
+	
+	
+	public void strategy2() {
+	
+		
+		
 	}
 
-	private void randomeMove() {
-		int numOfMunchers = Math.min(random.nextInt(remainingMunchers + 1),
-				remainingNodes.size());
-		StringBuffer sb = new StringBuffer();
-		sb.append(numOfMunchers + ":");
-		int count = 0;
-		Set<Integer> usedNodes = new HashSet<Integer>();
-		while (count < numOfMunchers) {
-			for (int id : remainingNodes) {
-				if (random.nextBoolean() && !usedNodes.contains(id)) {
-					String program = programs[random.nextInt(programs.length)];
-					usedNodes.add(id);
-					sb.append(id + "/" + program + ",");
-					count++;
-					if (count == numOfMunchers) {
-						break;
-					}
-				}
-			}
-		}
-		send(sb.toString().substring(0, sb.length() - 1));
+	public void strategy3() {
+	
+		
+		
 	}
+	
+
 
 	public static void main(String[] args) throws UnknownHostException,
 			IOException, InterruptedException {
