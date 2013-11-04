@@ -1,4 +1,4 @@
-package nanomunchers;
+
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +31,8 @@ public class Supershaq_nm {
 	private int myScore;
 	private int opponentScore;
 
-	private int remainingMunchers;
+	private int myRemainingMunchers;
+	private int hisRemainingMunchers;
 	private long remainingTime;
 
 	public Supershaq_nm(int port) throws UnknownHostException, IOException {
@@ -61,7 +62,7 @@ public class Supershaq_nm {
 			} else if (content.contains("nodeid1")) {
 				startEdges = true;
 				edgeMatrix = new boolean[remainingNodesList.size()][remainingNodesList.size()];
-				Arrays.fill(edgeMatrix, Boolean.FALSE);
+				//Arrays.fill(edgeMatrix, Boolean.FALSE);
 			
 			} else if (startEdges) {
 				String[] edgeSpecs = line.split(",");
@@ -102,7 +103,7 @@ public class Supershaq_nm {
 				
 				remainingNodesList.add(n);
 				
-				Board.nodes[x][y] = n;
+				Board.nodes[x][y] = new Node(id,x,y);
 				
 			}
 		}
@@ -115,7 +116,7 @@ public class Supershaq_nm {
 		String[] stats = str.split("\n");
 		String[] munched = stats[0].split(":");
 		if (Integer.parseInt(munched[0]) > 0) {
-			String[] nodes = munched[1].split(",");
+			String[] nodes = munched[1].split(",|/");
 			for (int i = 0; i < Integer.parseInt(munched[0]); i++) {
 				remainingNodesList.get(Integer.parseInt(nodes[i])).eaten = true;
 			}
@@ -146,8 +147,9 @@ public class Supershaq_nm {
 		myScore = Integer.parseInt(scores[0]);
 		opponentScore = Integer.parseInt(scores[1]);
 		String[] remainingInfo = stats[4].split(",");
-		remainingMunchers = Integer.parseInt(remainingInfo[0]);
-		remainingTime = Long.parseLong(remainingInfo[1]);
+		myRemainingMunchers = Integer.parseInt(remainingInfo[0]);
+		hisRemainingMunchers = Integer.parseInt(remainingInfo[1]);
+		remainingTime = Long.parseLong(remainingInfo[2]);
 		return true;
 	}
 
@@ -173,8 +175,8 @@ public class Supershaq_nm {
 
 	public void startGame() throws IOException, InterruptedException {
 		while (parseStat(receive())) {
-			System.out.println("remaining munchers: " + remainingMunchers);
-			//Thread.sleep(500);
+			System.out.println("remaining munchers: " + myRemainingMunchers);
+			Thread.sleep(500);
 			strategy1();
 		}
 	}
@@ -184,7 +186,11 @@ public class Supershaq_nm {
 	//write your strategies here as functions. 
 	public void strategy1() {
 	
-		
+		for( int i = 0; i<remainingNodesList.size();i++){
+			if(!remainingNodesList.get(i).eaten){
+				send("1:"+i+"/"+"rlud");
+			}
+		}
 		
 	}
 	
